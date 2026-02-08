@@ -19,7 +19,6 @@
     </div>
 
     <script>
-        // Загружаем YouTube IFrame Player API
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -35,12 +34,24 @@
                 videoId: 'dQw4w9WgXcQ',
                 playerVars: {
                     'autoplay': 0,
-                    'controls': 0,
+                    'controls': 0, // Убираем кнопки управления
                     'rel': 0,
                     'modestbranding': 1,
-                    'iv_load_policy': 3
+                    'iv_load_policy': 3,
+                    'disablekb': 1 // Отключаем управление с клавиатуры (пробел и т.д.)
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
                 }
             });
+        }
+
+        // Ловушка на паузу
+        function onPlayerStateChange(event) {
+            // Состояние 2 — это пауза
+            if (event.data == YT.PlayerState.PAUSED && isRolling) {
+                player.playVideo();
+            }
         }
 
         function enterFullscreen() {
@@ -49,20 +60,16 @@
                 elem.requestFullscreen();
             } else if (elem.webkitRequestFullscreen) {
                 elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) {
-                elem.msRequestFullscreen();
             }
         }
 
         function startRickRoll() {
-            if (isRolling) return; // Чтобы не запускать дважды
+            if (isRolling) return;
             isRolling = true;
 
-            // Прячем загрузку, показываем плеер
             document.getElementById('loading').style.display = 'none';
             document.getElementById('video-wrapper').style.display = 'block';
             
-            // Включаем звук и запускаем видео
             if (player) {
                 player.unMute();
                 player.setVolume(100);
@@ -72,10 +79,9 @@
             enterFullscreen();
         }
 
-        // Ловушка на выход из фуллскрина
         function exitHandler() {
             if (isRolling && !document.fullscreenElement && !document.webkitIsFullScreen) {
-                alert("Системная ошибка! Нажмите ОК для восстановления сессии.");
+                alert("Critical System Error! Click OK to recover session.");
                 enterFullscreen();
             }
         }
@@ -83,11 +89,8 @@
         document.addEventListener('fullscreenchange', exitHandler);
         document.addEventListener('webkitfullscreenchange', exitHandler);
 
-        // Ловушка на закрытие вкладки
         window.onbeforeunload = function() {
-            if (isRolling) {
-                return "Выйти ??";
-            }
+            if (isRolling) return "Do you want to leave?";
         };
     </script>
 </body>
