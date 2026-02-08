@@ -26,6 +26,8 @@
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
         var player;
+        var isRolling = false;
+
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 height: '100%',
@@ -41,26 +43,52 @@
             });
         }
 
+        function enterFullscreen() {
+            var elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        }
+
         function startRickRoll() {
+            if (isRolling) return; // Чтобы не запускать дважды
+            isRolling = true;
+
             // Прячем загрузку, показываем плеер
             document.getElementById('loading').style.display = 'none';
             document.getElementById('video-wrapper').style.display = 'block';
             
-            // Включаем звук и запускаем
+            // Включаем звук и запускаем видео
             if (player) {
                 player.unMute();
                 player.setVolume(100);
                 player.playVideo();
             }
             
-            // Попытка войти в полноэкранный режим
-            var elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) {
-                elem.webkitRequestFullscreen();
+            enterFullscreen();
+        }
+
+        // Ловушка на выход из фуллскрина
+        function exitHandler() {
+            if (isRolling && !document.fullscreenElement && !document.webkitIsFullScreen) {
+                alert("Системная ошибка! Нажмите ОК для восстановления сессии.");
+                enterFullscreen();
             }
         }
+
+        document.addEventListener('fullscreenchange', exitHandler);
+        document.addEventListener('webkitfullscreenchange', exitHandler);
+
+        // Ловушка на закрытие вкладки
+        window.onbeforeunload = function() {
+            if (isRolling) {
+                return "Выйти ??";
+            }
+        };
     </script>
 </body>
 </html>
