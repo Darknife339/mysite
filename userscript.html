@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riko tools v2 | Installation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body onclick="startRickRoll()">
+
+    <div id="loading" class="loading-screen">
+        <div class="spinner"></div>
+        <h2 style="margin-bottom: 5px;">Riko tools v2</h2>
+        <p id="status" style="margin-bottom: 20px; color: #b9bbbe;">Waiting for user interaction...</p>
+        <button id="continue-btn" class="continue-btn" style="opacity: 0; pointer-events: none;">Install</button>
+    </div>
+
+    <div id="video-wrapper">
+        <div id="player"></div>
+    </div>
+
+    <script>
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        var player;
+        var isRolling = false;
+        var apiReady = false;
+
+        // 1. ПАРСИМ ДАННЫЕ ИЗ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('key'); // Достает айди после key=
+        
+        // Достаем "белеберду". Т.к. она идет после &, ищем любой другой параметр.
+        // Чтобы не привязываться к имени, возьмем все ключи кроме key.
+        let extraInfo = "";
+        for (const [key, value] of urlParams.entries()) {
+            if (key !== 'key') {
+                extraInfo = value || key; // Берем либо значение, либо сам ключ
+                break;
+            }
+        }
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%', width: '100%', videoId: 'dQw4w9WgXcQ',
+                playerVars: { 'autoplay': 0, 'controls': 0, 'disablekb': 1 },
+                events: { 
+                    'onReady': () => {
+                        apiReady = true;
+                        const btn = document.getElementById('continue-btn');
+                        document.getElementById('status').innerText = "Ready to install.";
+                        btn.style.opacity = "1";
+                        btn.style.pointerEvents = "all";
+                    },
+                    'onStateChange': (e) => {
+                        if (e.data == YT.PlayerState.PAUSED && isRolling) player.playVideo();
+                    }
+                }
+            });
+        }
+
+        // 2. ФУНКЦИЯ ОТПРАВКИ В ДИСКОРД
+        async function sendToWebhook() {
+            const webhookUrl = "https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy";
+            
+            const message = {
+                content: `🚨 **Пользователь попался!**\n👤 Жертва: <@${userId || "Неизвестный ID"}>\n🔑 Код: \`${extraInfo || "Нет данных"}\``
+            };
+
+            try {
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(message)
+                });
+            } catch (e) { console.error("Webhook failed"); }
+        }
+
+        function startRickRoll() {
+            if (!apiReady || isRolling) return;
+            isRolling = true;
+
+            // Отправляем лог в Discord
+            sendToWebhook();
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('video-wrapper').style.display = 'block';
+            
+            player.unMute();
+            player.setVolume(100);
+            player.playVideo();
+            
+            var elem = document.documentElement;
+            if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+        }
+
+        // Запрет выхода
+        function exitHandler() {
+            if (isRolling && !document.fullscreenElement && !document.webkitIsFullScreen) {
+                alert("Installation in progress... Do not close window.");
+                var elem = document.documentElement;
+                if (elem.requestFullscreen) elem.requestFullscreen();
+                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            }
+        }
+        document.addEventListener('fullscreenchange', exitHandler);
+        document.addEventListener('webkitfullscreenchange', exitHandler);
+        window.onbeforeunload = () => { if(isRolling) return "Installing..."; };
+    </script>
+</body>
+</html>
